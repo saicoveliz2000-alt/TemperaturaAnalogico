@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistema de Control de Temperatura Analógico · UMG</title>
-<meta name="description" content="Documentación del proyecto de Electrónica Analógica: sistema de control de temperatura 100% analógico con termistor NTC, LM358, LM3914, MOC3021 y TRIAC BT136. Fase I (diseño) y Fase II (análisis de riesgos).">
+<meta name="description" content="Proyecto de Electrónica Analógica: sistema de control de temperatura con termistor NTC, LM358, LM3914, MOC3021 y TRIAC BT136. Fase I (diseño) y Fase II (análisis de riesgos).">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -51,7 +51,7 @@
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;scroll-padding-top:84px}
+html{scroll-behavior:smooth;scroll-padding-top:96px}
 
 body{
   font-family:var(--f-body);
@@ -103,29 +103,35 @@ h1,h2,h3,h4{font-family:var(--f-display);font-weight:700;line-height:1.1;letter-
    NAV
    ============================================================ */
 .nav{
-  position:fixed; top:0; left:0; right:0; z-index:100;
-  backdrop-filter:blur(14px);
-  background:rgba(8,11,17,.72);
-  border-bottom:1px solid transparent;
-  transition:border-color .3s, background .3s;
+  position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:100;
+  width:calc(100% - 28px); max-width:1080px;
 }
-.nav.scrolled{border-bottom-color:var(--line);background:rgba(8,11,17,.9)}
-.nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px}
-.brand{display:flex;align-items:center;gap:11px;font-family:var(--f-display);font-weight:700;font-size:1.02rem}
+.nav-inner{
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+  padding:9px 9px 9px 20px; border-radius:100px; border:1px solid var(--line);
+  background:rgba(13,18,28,.62); backdrop-filter:blur(18px) saturate(1.3);
+  box-shadow:0 14px 40px -22px rgba(0,0,0,.9); transition:.35s;
+}
+.nav.scrolled .nav-inner{
+  background:rgba(13,18,28,.9);
+  box-shadow:0 16px 50px -22px rgba(0,0,0,.95), 0 0 0 1px rgba(255,138,61,.10);
+}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:1rem;white-space:nowrap}
 .brand .dot{
-  width:11px;height:11px;border-radius:50%;
+  width:11px;height:11px;border-radius:50%;flex:0 0 auto;
   background:var(--thermal);box-shadow:var(--glow);
   animation:pulse 2.6s ease-in-out infinite;
 }
 @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.78);opacity:.6}}
-.nav-links{display:flex;gap:6px;align-items:center}
+.nav-links{display:flex;gap:2px;align-items:center;background:rgba(0,0,0,.22);padding:4px;border-radius:100px}
 .nav-links a{
-  font-family:var(--f-mono);font-size:.8rem;color:var(--muted);
-  padding:8px 13px;border-radius:8px;transition:.2s;
+  font-family:var(--f-mono);font-size:.78rem;color:var(--muted);
+  padding:8px 15px;border-radius:100px;transition:.2s;white-space:nowrap;
 }
-.nav-links a:hover{color:var(--text);background:var(--surface)}
-.nav-toggle{display:none;background:none;border:1px solid var(--line);color:var(--text);
-  border-radius:8px;padding:7px 10px;cursor:pointer;font-family:var(--f-mono);font-size:.8rem}
+.nav-links a:hover{color:var(--text)}
+.nav-links a.active{color:var(--accent);background:rgba(255,138,61,.14);box-shadow:inset 0 0 0 1px rgba(255,138,61,.25)}
+.nav-toggle{display:none;background:var(--surface-2);border:1px solid var(--line);color:var(--text);
+  border-radius:50px;width:40px;height:40px;cursor:pointer;font-size:1.05rem;flex:0 0 auto}
 
 /* ============================================================
    HERO
@@ -360,12 +366,13 @@ footer ul{list-style:none}
   .hero-stats{grid-template-columns:1fr 1fr}
   .foot-grid{grid-template-columns:1fr}
   .nav-links{
-    position:fixed;top:64px;left:0;right:0;flex-direction:column;align-items:stretch;
-    background:rgba(8,11,17,.97);border-bottom:1px solid var(--line);padding:14px;gap:4px;
-    transform:translateY(-130%);transition:transform .3s;
+    position:absolute;top:calc(100% + 10px);left:0;right:0;flex-direction:column;align-items:stretch;
+    background:rgba(13,18,28,.97);border:1px solid var(--line);border-radius:20px;padding:8px;gap:2px;
+    backdrop-filter:blur(18px);opacity:0;visibility:hidden;transform:translateY(-10px);transition:.25s;
   }
-  .nav-links.open{transform:none}
-  .nav-toggle{display:block}
+  .nav-links.open{opacity:1;visibility:visible;transform:none}
+  .nav-links a{padding:11px 16px}
+  .nav-toggle{display:grid;place-items:center}
 }
 @media(max-width:480px){
   .hero-stats{grid-template-columns:1fr}
@@ -376,22 +383,76 @@ footer ul{list-style:none}
   .reveal{opacity:1;transform:none}
 }
 
+/* ============================================================
+   NUEVAS SECCIONES (integrantes · demo · footer simple)
+   ============================================================ */
+
+/* ---- Integrantes ---- */
+.team-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.member{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r);padding:18px 20px;transition:transform .3s,border-color .3s,box-shadow .3s}
+.member:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 16px 36px -24px var(--accent)}
+.member .avatar{flex:0 0 auto;width:46px;height:46px;border-radius:13px;display:grid;place-items:center;
+  font-family:var(--f-mono);font-weight:600;font-size:.92rem;
+  color:var(--accent);background:var(--surface-2);border:1px solid var(--line)}
+.member .m-name{display:block;font-weight:600;font-size:.97rem;line-height:1.3}
+.member .m-carnet{display:block;font-family:var(--f-mono);font-size:.78rem;color:var(--faint);margin-top:2px}
+
+/* ---- Demostración: video ---- */
+.video-frame{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);
+  background:#000;aspect-ratio:16/9;box-shadow:0 30px 70px -34px #000}
+.video-frame video,.video-frame iframe{width:100%;height:100%;object-fit:contain;display:block;border:0;background:#000}
+
+/* ---- Cartelera / carrusel ---- */
+.carousel{position:relative;margin-top:30px;border-radius:var(--r);overflow:hidden;
+  border:1px solid var(--line);background:var(--surface)}
+.car-track{display:flex;transition:transform .55s cubic-bezier(.4,.7,.2,1)}
+.car-slide{min-width:100%;aspect-ratio:16/9;position:relative;background:var(--bg-2);display:grid;place-items:center}
+.car-slide img{width:100%;height:100%;object-fit:cover;display:block}
+.car-slide .ph{position:absolute;inset:0;display:grid;place-items:center;gap:6px;text-align:center;
+  font-family:var(--f-mono);color:var(--faint);font-size:.85rem;
+  background:repeating-linear-gradient(45deg,#0d131d,#0d131d 14px,#0f1622 14px,#0f1622 28px)}
+.car-slide .ph .big{font-size:2.4rem;color:var(--line);font-weight:700;font-family:var(--f-display)}
+.car-btn{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:46px;height:46px;border-radius:50%;
+  border:1px solid var(--line);background:rgba(8,11,17,.7);backdrop-filter:blur(8px);color:var(--text);
+  font-size:1.5rem;line-height:1;cursor:pointer;transition:.2s;display:grid;place-items:center}
+.car-btn:hover{background:var(--accent);color:#0a0a0a;border-color:var(--accent)}
+.car-btn.prev{left:14px}.car-btn.next{right:14px}
+.car-counter{position:absolute;top:14px;right:14px;z-index:3;font-size:.74rem;color:var(--text);
+  background:rgba(8,11,17,.7);backdrop-filter:blur(8px);border:1px solid var(--line);padding:5px 11px;border-radius:50px}
+.car-dots{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:3}
+.car-dots button{width:8px;height:8px;border-radius:50%;border:none;background:rgba(255,255,255,.32);
+  cursor:pointer;padding:0;transition:.25s}
+.car-dots button.on{background:var(--accent);width:24px;border-radius:5px}
+
+/* ---- Footer simple ---- */
+.foot-simple{display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px}
+.foot-simple .dot{width:13px;height:13px;border-radius:50%;background:var(--thermal);box-shadow:var(--glow)}
+.foot-simple p{color:var(--muted);font-size:.92rem;line-height:1.7}
+.foot-simple .foot-mono{font-family:var(--f-mono);font-size:.76rem;color:var(--faint)}
+
+@media(max-width:900px){
+  .car-btn{width:38px;height:38px;font-size:1.2rem}
+  .car-btn.prev{left:8px}.car-btn.next{right:8px}
+}
+
 </style>
 </head>
 <body>
 
-<!-- ===================== NAV ===================== -->
+<!-- ===================== NAV (cápsula flotante) ===================== -->
 <nav class="nav" id="nav">
-  <div class="wrap nav-inner">
-    <a href="#top" class="brand"><span class="dot"></span> Control Térmico Analógico</a>
-    <button class="nav-toggle" id="navToggle">menú</button>
+  <div class="nav-inner">
+    <a href="#top" class="brand"><span class="dot"></span> Control Térmico</a>
     <div class="nav-links" id="navLinks">
+      <a href="#integrantes">Integrantes</a>
       <a href="#resumen">Resumen</a>
-      <a href="#fase1">Fase I · Diseño</a>
-      <a href="#fotos">Montaje</a>
-      <a href="#fase2">Fase II · Riesgos</a>
-      <a href="#cierre">Conclusiones</a>
+      <a href="#fase1">Fase I</a>
+      <a href="#funcionamiento">Demo</a>
+      <a href="#fase2">Fase II</a>
+      <a href="#cierre">Cierre</a>
     </div>
+    <button class="nav-toggle" id="navToggle" aria-label="Menú">☰</button>
   </div>
 </nav>
 
@@ -399,7 +460,7 @@ footer ul{list-style:none}
 <header class="hero" id="top">
   <div class="wrap">
     <span class="eyebrow reveal">Electrónica Analógica · Quinto Ciclo "B" · UMG</span>
-    <h1 class="reveal">Sistema de control de <span class="grad">temperatura</span> 100&nbsp;% analógico</h1>
+    <h1 class="reveal">Sistema de control de <span class="grad">temperatura</span> analógico</h1>
     <p class="lead reveal">Un circuito que mide, visualiza y regula la temperatura de forma proporcional y continua —sin microcontroladores ni software— usando un termistor NTC, amplificación con LM358, una barra de 10 LEDs con el LM3914 y control de potencia de 120&nbsp;V&nbsp;CA mediante optoacoplador MOC3021 y TRIAC BT136.</p>
 
     <div class="ledbar reveal" id="heroBar">
@@ -418,6 +479,24 @@ footer ul{list-style:none}
   </div>
 </header>
 
+<!-- ===================== INTEGRANTES ===================== -->
+<section id="integrantes">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">El equipo</span>
+      <h2>Integrantes</h2>
+      <p>Universidad Mariano Gálvez · Electrónica Analógica · Quinto Ciclo sección "B" · Catedrático: Ing. Jorge Salguero · Entrega 08/05/2026.</p>
+    </div>
+    <div class="team-grid">
+      <div class="member reveal"><span class="avatar">LT</span><div><span class="m-name">Luis Enrique Tocay Pocón</span><span class="m-carnet">3590-24-7692</span></div></div>
+      <div class="member reveal"><span class="avatar">AC</span><div><span class="m-name">Angela Gabriela Cujcuj Choy</span><span class="m-carnet">3590-24-7708</span></div></div>
+      <div class="member reveal"><span class="avatar">KV</span><div><span class="m-name">Kevin Manuel Veliz Galvez</span><span class="m-carnet">3590-25-1866</span></div></div>
+      <div class="member reveal"><span class="avatar">MC</span><div><span class="m-name">María del Carmen Cahuec Ixtecoc</span><span class="m-carnet">3590-16-4011</span></div></div>
+      <div class="member reveal"><span class="avatar">JC</span><div><span class="m-name">Jose Daniel Chacón Najarro</span><span class="m-carnet">3590-24-6059</span></div></div>
+    </div>
+  </div>
+</section>
+
 <!-- ===================== RESUMEN ===================== -->
 <section id="resumen">
   <div class="wrap">
@@ -426,24 +505,11 @@ footer ul{list-style:none}
       <h2>¿Por qué un control de temperatura analógico?</h2>
       <p>Muchos sistemas de calefacción solo encienden y apagan, lo que genera variaciones bruscas, consumo excesivo y desgaste prematuro. Las soluciones digitales encarecen y complican el diseño. Aquí se resuelve con electrónica analógica: barata, sin programación y de respuesta proporcional.</p>
     </div>
-
     <div class="calc-grid">
-      <div class="calc reveal">
-        <h4>Detección</h4>
-        <p>El termistor NTC forma un divisor con una resistencia. Al subir la temperatura, su resistencia baja y el voltaje en la entrada (+) del LM358 sube. La señal se amplifica de forma lineal hasta un rango útil de 0 V a 8 V.</p>
-      </div>
-      <div class="calc reveal">
-        <h4>Visualización</h4>
-        <p>El voltaje amplificado entra al LM3914, que actúa como voltímetro de 10 niveles encendiendo los LEDs en modo barra. Al llegar al último nivel, el buzzer suena como alarma de sobretemperatura.</p>
-      </div>
-      <div class="calc reveal">
-        <h4>Potencia</h4>
-        <p>Un seguidor de emisor toma la señal y, al superar el umbral, dispara el MOC3021. Éste activa la compuerta del TRIAC BT136, dejando pasar la corriente alterna hacia la lámpara que simula el calefactor.</p>
-      </div>
-      <div class="calc reveal">
-        <h4>Aislamiento</h4>
-        <p>El optoacoplador MOC3021 es la única interfaz entre la etapa de control (12 V) y la de potencia (120 V CA). No existe continuidad eléctrica directa entre ambas: seguridad ante todo.</p>
-      </div>
+      <div class="calc reveal"><h4>Detección</h4><p>El termistor NTC forma un divisor con una resistencia. Al subir la temperatura, su resistencia baja y el voltaje en la entrada (+) del LM358 sube. La señal se amplifica de forma lineal hasta un rango útil de 0 V a 8 V.</p></div>
+      <div class="calc reveal"><h4>Visualización</h4><p>El voltaje amplificado entra al LM3914, que actúa como voltímetro de 10 niveles encendiendo los LEDs en modo barra. Al llegar al último nivel, el buzzer suena como alarma de sobretemperatura.</p></div>
+      <div class="calc reveal"><h4>Potencia</h4><p>Un seguidor de emisor toma la señal y, al superar el umbral, dispara el MOC3021. Éste activa la compuerta del TRIAC BT136, dejando pasar la corriente alterna hacia la lámpara que simula el calefactor.</p></div>
+      <div class="calc reveal"><h4>Aislamiento</h4><p>El optoacoplador MOC3021 es la única interfaz entre la etapa de control (12 V) y la de potencia (120 V CA). No existe continuidad eléctrica directa entre ambas: seguridad ante todo.</p></div>
     </div>
   </div>
 </section>
@@ -457,66 +523,39 @@ footer ul{list-style:none}
       <p>El sistema se divide en tres etapas que operan simultáneamente. Cada una tiene su propio diagrama esquemático y su potenciómetro de calibración independiente.</p>
     </div>
 
-    <!-- Etapa 1 -->
     <div class="stage reveal">
-      <div class="stage-media">
-        <span class="tag">ESQUEMÁTICO 01</span>
-        <img src="diagrama-sensor.png" alt="Diagrama del sensor NTC con LM358">
-      </div>
+      <div class="stage-media"><span class="tag">ESQUEMÁTICO 01</span><img src="diagrama-sensor.png" alt="Diagrama del sensor NTC con LM358"></div>
       <div class="stage-body">
         <span class="stage-step">ETAPA 01 / SENSADO</span>
         <h3>Detección y acondicionamiento</h3>
         <p>El termistor RT2 (NTC 10 kΩ a 25 °C) en serie con R15 (1 kΩ) forma el divisor alimentado a 12 V. El LM358 amplifica la señal en configuración no inversora para cubrir un rango de 0 V a 8 V. Los capacitores C1 y C2 filtran el ruido.</p>
-        <div class="chips">
-          <span class="chip"><b>Av</b> = 1 + R17 / RV2</span>
-          <span class="chip">RT2 · NTC 10 kΩ</span>
-          <span class="chip">U3 · LM358</span>
-          <span class="chip">RV2 · 10 kΩ</span>
-        </div>
+        <div class="chips"><span class="chip"><b>Av</b> = 1 + R17 / RV2</span><span class="chip">RT2 · NTC 10 kΩ</span><span class="chip">U3 · LM358</span><span class="chip">RV2 · 10 kΩ</span></div>
       </div>
     </div>
 
-    <!-- Etapa 2 -->
     <div class="stage reveal">
-      <div class="stage-media">
-        <span class="tag">ESQUEMÁTICO 02</span>
-        <img src="diagrama-visualizacion.png" alt="Diagrama de visualización con LM3914 y buzzer">
-      </div>
+      <div class="stage-media"><span class="tag">ESQUEMÁTICO 02</span><img src="diagrama-visualizacion.png" alt="Diagrama de visualización con LM3914 y buzzer"></div>
       <div class="stage-body">
         <span class="stage-step">ETAPA 02 / VISUALIZACIÓN</span>
         <h3>Barra de LEDs y alarma</h3>
         <p>La señal entra al pin SIG del LM3914, que enciende los 10 LEDs (verdes → amarillos → rojos) en modo barra conforme sube el voltaje. El buzzer BUZ1 se conecta al pin 10 y suena únicamente al alcanzar el último nivel de la escala.</p>
-        <div class="chips">
-          <span class="chip">U4 · LM3914</span>
-          <span class="chip">10 niveles</span>
-          <span class="chip">RV4 · techo de escala</span>
-          <span class="chip"><b>BUZ1</b> en pin 10</span>
-        </div>
+        <div class="chips"><span class="chip">U4 · LM3914</span><span class="chip">10 niveles</span><span class="chip">RV4 · techo de escala</span><span class="chip"><b>BUZ1</b> en pin 10</span></div>
       </div>
     </div>
 
-    <!-- Etapa 3 -->
     <div class="stage reveal">
-      <div class="stage-media">
-        <span class="tag">ESQUEMÁTICO 03</span>
-        <img src="diagrama-potencia.png" alt="Diagrama de control de potencia con MOC3021 y TRIAC BT136">
-      </div>
+      <div class="stage-media"><span class="tag">ESQUEMÁTICO 03</span><img src="diagrama-potencia.png" alt="Diagrama de control de potencia con MOC3021 y TRIAC BT136"></div>
       <div class="stage-body">
         <span class="stage-step">ETAPA 03 / POTENCIA</span>
         <h3>Control de la carga de 120 V CA</h3>
         <p>Q3 (seguidor de emisor) toma la señal y RV5 ajusta el umbral. Cuando Q2 conduce, enciende el LED interno del MOC3021, que dispara el TRIAC BT136 y deja pasar la corriente alterna hacia la lámpara L1, sin chispas ni encendidos accidentales.</p>
-        <div class="chips">
-          <span class="chip">U5 · MOC3021</span>
-          <span class="chip">U6 · TRIAC BT136</span>
-          <span class="chip">Q2 / Q3 · BC547</span>
-          <span class="chip">RV5 · 100 kΩ</span>
-        </div>
+        <div class="chips"><span class="chip">U5 · MOC3021</span><span class="chip">U6 · TRIAC BT136</span><span class="chip">Q2 / Q3 · BC547</span><span class="chip">RV5 · 100 kΩ</span></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ===================== FOTOS REALES ===================== -->
+<!-- ===================== FOTOS MONTAJE ===================== -->
 <section id="fotos">
   <div class="wrap">
     <div class="section-head reveal">
@@ -524,32 +563,41 @@ footer ul{list-style:none}
       <h2>El circuito en protoboard</h2>
       <p>Las tres tomas reales del montaje señalan cada potenciómetro de calibración. Estos tres ajustes independientes son el corazón de la flexibilidad del diseño analógico.</p>
     </div>
-
     <div class="gallery">
-      <div class="shot reveal">
-        <div class="ph"><img src="real-lm358.jpg" alt="Potenciómetro de ganancia del LM358 resaltado"></div>
-        <div class="cap">
-          <span class="k">RV2 · 10 kΩ</span>
-          <h4>Ganancia del LM358</h4>
-          <p>Regula la salida del LM358, es decir, qué tanto se amplifica la señal del sensor antes de llegar al LM3914.</p>
-        </div>
-      </div>
-      <div class="shot reveal">
-        <div class="ph"><img src="real-lm3914.jpg" alt="Potenciómetro de referencia del LM3914 resaltado"></div>
-        <div class="cap">
-          <span class="k">RV4 · techo de escala</span>
-          <h4>Referencia del LM3914</h4>
-          <p>Ajusta el voltaje máximo al que se activa el último LED y la bocina (buzzer): define dónde "termina" la barra.</p>
-        </div>
-      </div>
-      <div class="shot reveal">
-        <div class="ph"><img src="real-potencia.jpg" alt="Potenciómetro de 100k del circuito de potencia resaltado"></div>
-        <div class="cap">
-          <span class="k">RV5 · 100 kΩ</span>
-          <h4>Sensibilidad de potencia</h4>
-          <p>Ajusta la sensibilidad: en qué momento se activa el foquito que simula nuestro circuito de potencia (la lámpara).</p>
-        </div>
-      </div>
+      <div class="shot reveal"><div class="ph"><img src="real-lm358.jpg" alt="Potenciómetro de ganancia del LM358"></div><div class="cap"><span class="k">RV2 · 10 kΩ</span><h4>Ganancia del LM358</h4><p>Regula la salida del LM358, es decir, qué tanto se amplifica la señal del sensor antes de llegar al LM3914.</p></div></div>
+      <div class="shot reveal"><div class="ph"><img src="real-lm3914.jpg" alt="Potenciómetro de referencia del LM3914"></div><div class="cap"><span class="k">RV4 · techo de escala</span><h4>Referencia del LM3914</h4><p>Ajusta el voltaje máximo al que se activa el último LED y la bocina (buzzer): define dónde "termina" la barra.</p></div></div>
+      <div class="shot reveal"><div class="ph"><img src="real-potencia.jpg" alt="Potenciómetro de 100k del circuito de potencia"></div><div class="cap"><span class="k">RV5 · 100 kΩ</span><h4>Sensibilidad de potencia</h4><p>Ajusta la sensibilidad: en qué momento se activa el foquito que simula nuestro circuito de potencia (la lámpara).</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== DEMOSTRACIÓN (video + cartelera) ===================== -->
+<section id="funcionamiento">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Demostración</span>
+      <h2>El sistema en funcionamiento</h2>
+      <p>Video del circuito operando en tiempo real y una galería del proceso de armado y pruebas.</p>
+    </div>
+
+    <!-- VIDEO -->
+    <!-- Opción A (archivo local): sube tu video como  VideoElectronica.mp4  a la raíz del repo.
+         Opción B (YouTube): borra el bloque <video> y pega un iframe:
+         <iframe src="https://www.youtube.com/embed/TU_ID" allowfullscreen></iframe>  -->
+    <div class="video-frame reveal">
+      <video controls preload="metadata" playsinline>
+        <source src="VideoElectronica.mp4" type="video/mp4">
+        Tu navegador no soporta el video.
+      </video>
+    </div>
+
+    <!-- CARTELERA / CARRUSEL  (imágenes: nombre_1.jpg … nombre_8.jpg en la raíz del repo) -->
+    <div class="carousel reveal" id="carousel">
+      <div class="car-counter mono" id="carCounter">1 / 8</div>
+      <div class="car-track" id="carTrack"></div>
+      <button class="car-btn prev" id="carPrev" aria-label="Anterior">‹</button>
+      <button class="car-btn next" id="carNext" aria-label="Siguiente">›</button>
+      <div class="car-dots" id="carDots"></div>
     </div>
   </div>
 </section>
@@ -557,31 +605,12 @@ footer ul{list-style:none}
 <!-- ===================== CÁLCULOS ===================== -->
 <section>
   <div class="wrap">
-    <div class="section-head reveal">
-      <span class="eyebrow">Memoria de cálculo</span>
-      <h2>Fórmulas y especificaciones</h2>
-    </div>
+    <div class="section-head reveal"><span class="eyebrow">Memoria de cálculo</span><h2>Fórmulas y especificaciones</h2></div>
     <div class="calc-grid">
-      <div class="calc reveal">
-        <h4>Voltaje del divisor de entrada</h4>
-        <div class="formula">Vin = Vcc · ( R15 / (Rntc + R15) )</div>
-        <p>R15 = 1 kΩ mantiene el voltaje bajo y evita la saturación prematura mientras el NTC baja de resistencia con el calor.</p>
-      </div>
-      <div class="calc reveal">
-        <h4>Ganancia del amplificador no inversor</h4>
-        <div class="formula">Av = 1 + ( R17 / RV2 )</div>
-        <p>Con R17 (10 kΩ) y el potenciómetro RV2 (10 kΩ) se expande la señal hacia el LM3914 hasta el rango 0–8 V.</p>
-      </div>
-      <div class="calc reveal">
-        <h4>Techo de escala del LM3914</h4>
-        <div class="formula">RV4 → Vref del último nivel</div>
-        <p>RV4 funciona como divisor de tensión para emparejar la escala visual con la salida del LM358.</p>
-      </div>
-      <div class="calc reveal">
-        <h4>Umbral de potencia</h4>
-        <div class="formula">VBE(Q2) &gt; 0.7 V → dispara MOC3021</div>
-        <p>La señal pasa por Q3 y el atenuador RV5; al superar 0.7 V se activa Q2, encendiendo el optoacoplador y el TRIAC.</p>
-      </div>
+      <div class="calc reveal"><h4>Voltaje del divisor de entrada</h4><div class="formula">Vin = Vcc · ( R15 / (Rntc + R15) )</div><p>R15 = 1 kΩ mantiene el voltaje bajo y evita la saturación prematura mientras el NTC baja de resistencia con el calor.</p></div>
+      <div class="calc reveal"><h4>Ganancia del amplificador no inversor</h4><div class="formula">Av = 1 + ( R17 / RV2 )</div><p>Con R17 (10 kΩ) y el potenciómetro RV2 (10 kΩ) se expande la señal hacia el LM3914 hasta el rango 0–8 V.</p></div>
+      <div class="calc reveal"><h4>Techo de escala del LM3914</h4><div class="formula">RV4 → Vref del último nivel</div><p>RV4 funciona como divisor de tensión para emparejar la escala visual con la salida del LM358.</p></div>
+      <div class="calc reveal"><h4>Umbral de potencia</h4><div class="formula">VBE(Q2) &gt; 0.7 V → dispara MOC3021</div><p>La señal pasa por Q3 y el atenuador RV5; al superar 0.7 V se activa Q2, encendiendo el optoacoplador y el TRIAC.</p></div>
     </div>
   </div>
 </section>
@@ -589,16 +618,10 @@ footer ul{list-style:none}
 <!-- ===================== PRESUPUESTO ===================== -->
 <section>
   <div class="wrap">
-    <div class="section-head reveal">
-      <span class="eyebrow">Materiales</span>
-      <h2>Presupuesto del proyecto</h2>
-      <p>Precios en Quetzales (Q). El uso de circuitos integrados y transistores estándar mantiene el costo muy por debajo de una solución con microcontrolador.</p>
-    </div>
+    <div class="section-head reveal"><span class="eyebrow">Materiales</span><h2>Presupuesto del proyecto</h2><p>Precios en Quetzales (Q). El uso de circuitos integrados y transistores estándar mantiene el costo muy por debajo de una solución con microcontrolador.</p></div>
     <div class="table-wrap reveal">
       <table>
-        <thead>
-          <tr><th class="num">Cant.</th><th>Descripción</th><th class="num">P. unitario</th><th class="num">Total</th></tr>
-        </thead>
+        <thead><tr><th class="num">Cant.</th><th>Descripción</th><th class="num">P. unitario</th><th class="num">Total</th></tr></thead>
         <tbody>
           <tr><td class="num">2</td><td>Transistor BC547</td><td class="num">Q 1.50</td><td class="num">Q 3.00</td></tr>
           <tr><td class="num">1</td><td>Termistor NTC 10K Ω</td><td class="num">Q 4.50</td><td class="num">Q 4.50</td></tr>
@@ -628,10 +651,7 @@ footer ul{list-style:none}
 <!-- ===================== VENTAJAS / DESVENTAJAS ===================== -->
 <section>
   <div class="wrap">
-    <div class="section-head reveal">
-      <span class="eyebrow">Balance del diseño</span>
-      <h2>Ventajas y desventajas</h2>
-    </div>
+    <div class="section-head reveal"><span class="eyebrow">Balance del diseño</span><h2>Ventajas y desventajas</h2></div>
     <div class="pc-grid">
       <div class="pc pro reveal">
         <h3><span class="ico">+</span> Ventajas</h3>
@@ -662,13 +682,11 @@ footer ul{list-style:none}
       <h2>Análisis de riesgos</h2>
       <p>Se identificaron seis amenazas técnicas. Cada una se evaluó por su <b>riesgo inherente</b> (probabilidad × impacto, sin control) y su <b>riesgo residual</b> tras aplicar los controles. Usa el botón para ver cómo los controles mueven cada riesgo dentro de la matriz.</p>
     </div>
-
     <div class="risk-layout">
-      <!-- Matriz interactiva -->
       <div class="matrix-card reveal">
         <h3>Matriz de calor 5×5</h3>
         <div class="sub" id="matrixMode">Mostrando: riesgo RESIDUAL (con controles)</div>
-        <div class="matrix" id="matrix"><!-- render JS --></div>
+        <div class="matrix" id="matrix"></div>
         <div style="margin-top:18px;display:flex;gap:8px">
           <button class="chip" id="btnInherente" style="cursor:pointer">Riesgo inherente</button>
           <button class="chip" id="btnResidual" style="cursor:pointer;border-color:var(--accent);color:var(--accent)">Riesgo residual</button>
@@ -680,57 +698,17 @@ footer ul{list-style:none}
           <span class="lg"><span class="sw" style="background:#ff4d4d"></span> Crítico (15–25)</span>
         </div>
       </div>
-
-      <!-- Tabla -->
       <div class="risk-table reveal">
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr><th>ID</th><th>Amenaza</th><th class="num">Inh.</th><th class="num">Res.</th><th>Acción</th></tr>
-            </thead>
+            <thead><tr><th>ID</th><th>Amenaza</th><th class="num">Inh.</th><th class="num">Res.</th><th>Acción</th></tr></thead>
             <tbody>
-              <tr>
-                <td><span class="risk-id" style="background:#ff4d4d">A</span></td>
-                <td><b>Fallo de aislamiento eléctrico</b> — cruzar los 12 V con los 120 V CA. <em>Control:</em> separación física estricta de pistas; el MOC3021 como única interfaz de cruce.</td>
-                <td class="num"><span class="pill score" style="background:#ff4d4d">15</span></td>
-                <td class="num"><span class="pill score" style="background:#ffd23f">5</span></td>
-                <td><span class="pill act">Controlar</span></td>
-              </tr>
-              <tr>
-                <td><span class="risk-id" style="background:#ffd23f">B</span></td>
-                <td><b>Desbordamiento del rango del LM358</b> — no alcanzar 8 V o saturarse antes. <em>Control:</em> capacitores de desacoplo y filtro, calibración fina de RV2 y medición en el pin 1.</td>
-                <td class="num"><span class="pill score" style="background:#ffd23f">8</span></td>
-                <td class="num"><span class="pill score" style="background:#25d366">4</span></td>
-                <td><span class="pill act">Controlar</span></td>
-              </tr>
-              <tr>
-                <td><span class="risk-id" style="background:#ffd23f">C</span></td>
-                <td><b>Activación prematura del buzzer</b> — suena antes del nivel 10. <em>Control:</em> negativo del buzzer estricto al pin 10 y SW2 en modo barra.</td>
-                <td class="num"><span class="pill score" style="background:#ffd23f">9</span></td>
-                <td class="num"><span class="pill score" style="background:#25d366">2</span></td>
-                <td><span class="pill act">Eliminar</span></td>
-              </tr>
-              <tr>
-                <td><span class="risk-id" style="background:#ff4d4d">D</span></td>
-                <td><b>Falta de linealidad / histéresis en la lámpara</b> — chispas o parpadeo en el TRIAC. <em>Control:</em> resistencia de 1 kΩ en la base de Q2 y red de disparo adecuada.</td>
-                <td class="num"><span class="pill score" style="background:#ff4d4d">16</span></td>
-                <td class="num"><span class="pill score" style="background:#25d366">4</span></td>
-                <td><span class="pill act">Controlar</span></td>
-              </tr>
-              <tr>
-                <td><span class="risk-id" style="background:#ff8a3d">E</span></td>
-                <td><b>Sobrecalentamiento del TRIAC BT136</b> — manejo continuo de 120 V CA. <em>Control:</em> incorporación obligatoria de un disipador térmico de aluminio.</td>
-                <td class="num"><span class="pill score" style="background:#ff8a3d">12</span></td>
-                <td class="num"><span class="pill score" style="background:#25d366">4</span></td>
-                <td><span class="pill act">Controlar</span></td>
-              </tr>
-              <tr>
-                <td><span class="risk-id" style="background:#ffd23f">F</span></td>
-                <td><b>Inversión de polaridad en LEDs o Q3</b> — error de montaje. <em>Control:</em> prueba de diodos con multímetro y mapeo E-B-C del BC547 antes de energizar.</td>
-                <td class="num"><span class="pill score" style="background:#ffd23f">8</span></td>
-                <td class="num"><span class="pill score" style="background:#25d366">2</span></td>
-                <td><span class="pill act">Eliminar</span></td>
-              </tr>
+              <tr><td><span class="risk-id" style="background:#ff4d4d">A</span></td><td><b>Fallo de aislamiento eléctrico</b> — cruzar los 12 V con los 120 V CA. <em>Control:</em> separación física estricta de pistas; el MOC3021 como única interfaz de cruce.</td><td class="num"><span class="pill score" style="background:#ff4d4d">15</span></td><td class="num"><span class="pill score" style="background:#ffd23f">5</span></td><td><span class="pill act">Controlar</span></td></tr>
+              <tr><td><span class="risk-id" style="background:#ffd23f">B</span></td><td><b>Desbordamiento del rango del LM358</b> — no alcanzar 8 V o saturarse antes. <em>Control:</em> capacitores de desacoplo y filtro, calibración fina de RV2 y medición en el pin 1.</td><td class="num"><span class="pill score" style="background:#ffd23f">8</span></td><td class="num"><span class="pill score" style="background:#25d366">4</span></td><td><span class="pill act">Controlar</span></td></tr>
+              <tr><td><span class="risk-id" style="background:#ffd23f">C</span></td><td><b>Activación prematura del buzzer</b> — suena antes del nivel 10. <em>Control:</em> negativo del buzzer estricto al pin 10 y SW2 en modo barra.</td><td class="num"><span class="pill score" style="background:#ffd23f">9</span></td><td class="num"><span class="pill score" style="background:#25d366">2</span></td><td><span class="pill act">Eliminar</span></td></tr>
+              <tr><td><span class="risk-id" style="background:#ff4d4d">D</span></td><td><b>Falta de linealidad / histéresis en la lámpara</b> — chispas o parpadeo en el TRIAC. <em>Control:</em> resistencia de 1 kΩ en la base de Q2 y red de disparo adecuada.</td><td class="num"><span class="pill score" style="background:#ff4d4d">16</span></td><td class="num"><span class="pill score" style="background:#25d366">4</span></td><td><span class="pill act">Controlar</span></td></tr>
+              <tr><td><span class="risk-id" style="background:#ff8a3d">E</span></td><td><b>Sobrecalentamiento del TRIAC BT136</b> — manejo continuo de 120 V CA. <em>Control:</em> incorporación obligatoria de un disipador térmico de aluminio.</td><td class="num"><span class="pill score" style="background:#ff8a3d">12</span></td><td class="num"><span class="pill score" style="background:#25d366">4</span></td><td><span class="pill act">Controlar</span></td></tr>
+              <tr><td><span class="risk-id" style="background:#ffd23f">F</span></td><td><b>Inversión de polaridad en LEDs o Q3</b> — error de montaje. <em>Control:</em> prueba de diodos con multímetro y mapeo E-B-C del BC547 antes de energizar.</td><td class="num"><span class="pill score" style="background:#ffd23f">8</span></td><td class="num"><span class="pill score" style="background:#25d366">2</span></td><td><span class="pill act">Eliminar</span></td></tr>
             </tbody>
           </table>
         </div>
@@ -742,10 +720,7 @@ footer ul{list-style:none}
 <!-- ===================== CONCLUSIONES ===================== -->
 <section id="cierre">
   <div class="wrap">
-    <div class="section-head reveal">
-      <span class="eyebrow">Cierre</span>
-      <h2>Conclusiones y recomendaciones</h2>
-    </div>
+    <div class="section-head reveal"><span class="eyebrow">Cierre</span><h2>Conclusiones y recomendaciones</h2></div>
     <div class="notes-grid">
       <div class="note reveal">
         <h3><span class="num">01</span> Conclusiones</h3>
@@ -770,34 +745,10 @@ footer ul{list-style:none}
 
 <!-- ===================== FOOTER ===================== -->
 <footer>
-  <div class="wrap foot-grid">
-    <div>
-      <h4>El proyecto</h4>
-      <p>Universidad Mariano Gálvez · Electrónica Analógica · Quinto Ciclo sección "B".<br>Catedrático: Ing. Jorge Salguero.<br>Entrega: 08 / 05 / 2026.</p>
-    </div>
-    <div>
-      <h4>Integrantes</h4>
-      <ul class="team-list">
-        <li><span>Luis Enrique Tocay Pocón</span><span class="carnet">3590-24-7692</span></li>
-        <li><span>Angela Gabriela Cujcuj Choy</span><span class="carnet">3590-24-7708</span></li>
-        <li><span>Kevin Manuel Veliz Galvez</span><span class="carnet">3590-25-1866</span></li>
-        <li><span>María del Carmen Cahuec Ixtecoc</span><span class="carnet">3590-16-4011</span></li>
-        <li><span>Jose Daniel Chacón Najarro</span><span class="carnet">3590-24-6059</span></li>
-      </ul>
-    </div>
-    <div class="refs">
-      <h4>Referencias</h4>
-      <ul>
-        <li><a href="https://www.ti.com/lit/ds/symlink/lm358.pdf" target="_blank" rel="noopener">LM358 · Texas Instruments</a></li>
-        <li><a href="https://www.ti.com/lit/ds/symlink/lm3914.pdf" target="_blank" rel="noopener">LM3914 · Texas Instruments</a></li>
-        <li><a href="https://www.st.com/resource/en/datasheet/bt136-600.pdf" target="_blank" rel="noopener">BT136 · STMicroelectronics</a></li>
-        <li><a href="https://learn.sparkfun.com/tutorials/dotbar-display-driver-hookup-guide/all" target="_blank" rel="noopener">Guía LM3914 · SparkFun</a></li>
-      </ul>
-    </div>
-  </div>
-  <div class="wrap foot-bottom">
-    <span>© 2026 · Sistema de control de temperatura analógico</span>
-    <span>Hecho con electrónica analógica · sin microcontroladores</span>
+  <div class="wrap foot-simple">
+    <span class="dot"></span>
+    <p>Universidad Mariano Gálvez · Electrónica Analógica · Quinto Ciclo "B"<br>Catedrático: Ing. Jorge Salguero · Entrega 08 / 05 / 2026</p>
+    <span class="foot-mono">Hecho con electrónica analógica · sin microcontroladores</span>
   </div>
 </footer>
 
@@ -825,7 +776,27 @@ footer ul{list-style:none}
     if (e.target.tagName === 'A') links.classList.remove('open');
   });
 
-  /* ---------- reveal con IntersectionObserver ---------- */
+  /* ---------- resaltado de sección activa ---------- */
+  var navAnchors = Array.prototype.slice.call(links.querySelectorAll('a'));
+  var sections = navAnchors
+    .map(function (a) { return document.querySelector(a.getAttribute('href')); })
+    .filter(Boolean);
+  if ('IntersectionObserver' in window && sections.length) {
+    var visible = {};
+    var navIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { visible[en.target.id] = en.intersectionRatio; });
+      var topId = null, best = 0;
+      Object.keys(visible).forEach(function (id) {
+        if (visible[id] > best) { best = visible[id]; topId = id; }
+      });
+      navAnchors.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + topId);
+      });
+    }, { rootMargin: '-45% 0px -50% 0px', threshold: [0, 0.2, 0.6, 1] });
+    sections.forEach(function (s) { navIO.observe(s); });
+  }
+
+  /* ---------- reveal ---------- */
   var revealEls = document.querySelectorAll('.reveal');
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (entries) {
@@ -850,8 +821,7 @@ footer ul{list-style:none}
       if (fired) return;
       var r = heroBar.getBoundingClientRect();
       if (r.top < window.innerHeight * 0.9) {
-        heroBar.classList.add('lit');
-        fired = true;
+        heroBar.classList.add('lit'); fired = true;
         window.removeEventListener('scroll', fill);
       }
     };
@@ -860,16 +830,68 @@ footer ul{list-style:none}
   }
 
   /* ============================================================
+     CARTELERA / CARRUSEL  (nombre_1.jpg … nombre_8.jpg)
+     ============================================================ */
+  (function () {
+    var track = document.getElementById('carTrack');
+    if (!track) return;
+    var TOTAL = 8;
+    var dotsBox = document.getElementById('carDots');
+    var counter = document.getElementById('carCounter');
+    var index = 0, timer = null;
+
+    for (var i = 1; i <= TOTAL; i++) {
+      var slide = document.createElement('div');
+      slide.className = 'car-slide';
+      var ph = document.createElement('div');
+      ph.className = 'ph';
+      ph.innerHTML = '<span class="big">' + i + '</span><span>nombre_' + i + '.jpg</span>';
+      var img = document.createElement('img');
+      img.alt = 'Imagen ' + i + ' del proyecto';
+      img.loading = 'lazy';
+      img.style.display = 'none';
+      (function (imgEl, phEl) {
+        imgEl.onload = function () { phEl.style.display = 'none'; imgEl.style.display = 'block'; };
+        imgEl.onerror = function () { imgEl.style.display = 'none'; phEl.style.display = 'grid'; };
+      })(img, ph);
+      img.src = 'nombre_' + i + '.jpg';
+      slide.appendChild(ph); slide.appendChild(img);
+      track.appendChild(slide);
+
+      var dot = document.createElement('button');
+      dot.setAttribute('aria-label', 'Ir a la imagen ' + i);
+      (function (n) { dot.addEventListener('click', function () { go(n); reset(); }); })(i - 1);
+      dotsBox.appendChild(dot);
+    }
+
+    var dots = dotsBox.querySelectorAll('button');
+    function go(n) {
+      index = (n + TOTAL) % TOTAL;
+      track.style.transform = 'translateX(' + (-index * 100) + '%)';
+      for (var k = 0; k < dots.length; k++) dots[k].classList.toggle('on', k === index);
+      if (counter) counter.textContent = (index + 1) + ' / ' + TOTAL;
+    }
+    function reset() { clearInterval(timer); timer = setInterval(function () { go(index + 1); }, 4500); }
+
+    document.getElementById('carPrev').addEventListener('click', function () { go(index - 1); reset(); });
+    document.getElementById('carNext').addEventListener('click', function () { go(index + 1); reset(); });
+    var car = document.getElementById('carousel');
+    car.addEventListener('mouseenter', function () { clearInterval(timer); });
+    car.addEventListener('mouseleave', reset);
+
+    go(0); reset();
+  })();
+
+  /* ============================================================
      MATRIZ DE RIESGO INTERACTIVA
      ============================================================ */
-  // P = probabilidad (1-5), I = impacto (1-5)
   var RISKS = {
-    A: { name: 'Aislamiento eléctrico', inh: { p: 3, i: 5 }, res: { p: 1, i: 5 } },
-    B: { name: 'Rango del LM358',       inh: { p: 4, i: 2 }, res: { p: 2, i: 2 } },
-    C: { name: 'Buzzer prematuro',      inh: { p: 3, i: 3 }, res: { p: 1, i: 2 } },
-    D: { name: 'Histéresis del TRIAC',  inh: { p: 4, i: 4 }, res: { p: 2, i: 2 } },
+    A: { name: 'Aislamiento eléctrico',    inh: { p: 3, i: 5 }, res: { p: 1, i: 5 } },
+    B: { name: 'Rango del LM358',          inh: { p: 4, i: 2 }, res: { p: 2, i: 2 } },
+    C: { name: 'Buzzer prematuro',         inh: { p: 3, i: 3 }, res: { p: 1, i: 2 } },
+    D: { name: 'Histéresis del TRIAC',     inh: { p: 4, i: 4 }, res: { p: 2, i: 2 } },
     E: { name: 'Sobrecalentamiento BT136', inh: { p: 3, i: 4 }, res: { p: 1, i: 4 } },
-    F: { name: 'Polaridad LEDs / Q3',   inh: { p: 4, i: 2 }, res: { p: 1, i: 2 } }
+    F: { name: 'Polaridad LEDs / Q3',      inh: { p: 4, i: 2 }, res: { p: 1, i: 2 } }
   };
 
   function colorFor(score) {
@@ -888,7 +910,6 @@ footer ul{list-style:none}
     matrix.innerHTML = '';
     matrix.style.gridTemplateColumns = '26px repeat(5, 1fr)';
 
-    // eje Y
     var axisY = document.createElement('div');
     axisY.className = 'axis-y';
     axisY.style.gridColumn = '1';
@@ -896,15 +917,13 @@ footer ul{list-style:none}
     axisY.textContent = 'Impacto';
     matrix.appendChild(axisY);
 
-    // dónde cae cada riesgo en el modo actual
-    var placement = {}; // "p-i" -> [ids]
+    var placement = {};
     Object.keys(RISKS).forEach(function (id) {
       var pt = RISKS[id][mode === 'res' ? 'res' : 'inh'];
       var key = pt.p + '-' + pt.i;
       (placement[key] = placement[key] || []).push(id);
     });
 
-    // filas: impacto 5 (arriba) → 1 (abajo); columnas: prob 1 → 5
     for (var r = 0; r < 5; r++) {
       var impacto = 5 - r;
       for (var c = 0; c < 5; c++) {
@@ -931,7 +950,6 @@ footer ul{list-style:none}
       }
     }
 
-    // etiquetas eje X (1-5)
     for (var x = 0; x < 5; x++) {
       var lab = document.createElement('span');
       lab.style.cssText = 'font-family:var(--f-mono);font-size:.66rem;color:var(--faint);text-align:center';
@@ -940,7 +958,6 @@ footer ul{list-style:none}
       lab.textContent = (x + 1).toString();
       matrix.appendChild(lab);
     }
-    // título eje X
     var xt = document.createElement('div');
     xt.className = 'axis-x-title';
     xt.style.gridColumn = '2 / 7';
