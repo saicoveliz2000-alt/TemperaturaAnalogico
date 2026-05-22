@@ -8,7 +8,375 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css">
+<style>
+/* ============================================================
+   Sistema de Control de Temperatura Analógico
+   Tema: laboratorio de electrónica · gradiente térmico
+   ============================================================ */
+
+:root{
+  /* superficies */
+  --bg:        #080b11;
+  --bg-2:      #0c111a;
+  --surface:   #111824;
+  --surface-2: #16202f;
+  --line:      #233044;
+  --line-soft: #1a2433;
+
+  /* texto */
+  --text:   #e7eef7;
+  --muted:  #8a99ad;
+  --faint:  #5a6b80;
+
+  /* gradiente térmico (barra de LEDs azul→verde→amarillo→naranja→rojo) */
+  --c-blue:   #2f86ff;
+  --c-green:  #25d366;
+  --c-yellow: #ffd23f;
+  --c-orange: #ff8a3d;
+  --c-red:    #ff4d4d;
+
+  --thermal: linear-gradient(90deg,
+      var(--c-blue) 0%, var(--c-green) 28%,
+      var(--c-yellow) 55%, var(--c-orange) 78%, var(--c-red) 100%);
+
+  --accent: var(--c-orange);
+  --glow: 0 0 32px -8px var(--c-orange);
+
+  --maxw: 1180px;
+  --r: 16px;
+
+  --f-display:'Bricolage Grotesque', sans-serif;
+  --f-body:'IBM Plex Sans', sans-serif;
+  --f-mono:'IBM Plex Mono', monospace;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+
+body{
+  font-family:var(--f-body);
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  position:relative;
+}
+
+/* malla / circuito de fondo */
+body::before{
+  content:"";
+  position:fixed; inset:0; z-index:-2;
+  background:
+    radial-gradient(900px 600px at 80% -10%, rgba(255,138,61,.10), transparent 60%),
+    radial-gradient(800px 600px at 0% 20%, rgba(47,134,255,.08), transparent 55%),
+    var(--bg);
+}
+body::after{
+  content:"";
+  position:fixed; inset:0; z-index:-1; opacity:.5;
+  background-image:
+    linear-gradient(var(--line-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+  background-size:46px 46px;
+  -webkit-mask-image:radial-gradient(circle at 50% 30%, #000 0%, transparent 75%);
+          mask-image:radial-gradient(circle at 50% 30%, #000 0%, transparent 75%);
+}
+
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+/* ---------- tipografía ---------- */
+h1,h2,h3,h4{font-family:var(--f-display);font-weight:700;line-height:1.1;letter-spacing:-.02em}
+.mono{font-family:var(--f-mono)}
+
+.eyebrow{
+  font-family:var(--f-mono);
+  font-size:.74rem; letter-spacing:.28em; text-transform:uppercase;
+  color:var(--accent); display:inline-flex; align-items:center; gap:10px;
+}
+.eyebrow::before{content:"";width:26px;height:1px;background:var(--accent);display:inline-block}
+
+/* ============================================================
+   NAV
+   ============================================================ */
+.nav{
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  backdrop-filter:blur(14px);
+  background:rgba(8,11,17,.72);
+  border-bottom:1px solid transparent;
+  transition:border-color .3s, background .3s;
+}
+.nav.scrolled{border-bottom-color:var(--line);background:rgba(8,11,17,.9)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--f-display);font-weight:700;font-size:1.02rem}
+.brand .dot{
+  width:11px;height:11px;border-radius:50%;
+  background:var(--thermal);box-shadow:var(--glow);
+  animation:pulse 2.6s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.78);opacity:.6}}
+.nav-links{display:flex;gap:6px;align-items:center}
+.nav-links a{
+  font-family:var(--f-mono);font-size:.8rem;color:var(--muted);
+  padding:8px 13px;border-radius:8px;transition:.2s;
+}
+.nav-links a:hover{color:var(--text);background:var(--surface)}
+.nav-toggle{display:none;background:none;border:1px solid var(--line);color:var(--text);
+  border-radius:8px;padding:7px 10px;cursor:pointer;font-family:var(--f-mono);font-size:.8rem}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{padding:148px 0 70px;position:relative}
+.hero .badges{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 26px}
+.badge{
+  font-family:var(--f-mono);font-size:.72rem;color:var(--muted);
+  border:1px solid var(--line);border-radius:50px;padding:6px 13px;background:var(--surface);
+}
+.hero h1{
+  font-size:clamp(2.5rem,7vw,5.2rem);margin:8px 0 18px;
+}
+.hero h1 .grad{
+  background:var(--thermal);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero p.lead{font-size:clamp(1.02rem,1.6vw,1.22rem);color:var(--muted);max-width:640px}
+
+/* barra LED animada del hero */
+.ledbar{display:flex;gap:7px;margin:38px 0 4px}
+.ledbar .led{
+  flex:1;height:13px;border-radius:4px;background:var(--surface-2);
+  border:1px solid var(--line);position:relative;overflow:hidden;
+}
+.ledbar .led::after{
+  content:"";position:absolute;inset:0;opacity:0;transform:translateY(100%);
+  transition:transform .5s ease, opacity .5s ease;
+}
+.ledbar.lit .led::after{opacity:1;transform:translateY(0)}
+.ledbar .led:nth-child(-n+4)::after{background:var(--c-blue);box-shadow:0 0 14px var(--c-blue)}
+.ledbar .led:nth-child(n+5):nth-child(-n+7)::after{background:var(--c-green);box-shadow:0 0 14px var(--c-green)}
+.ledbar .led:nth-child(8)::after,.ledbar .led:nth-child(9)::after{background:var(--c-yellow);box-shadow:0 0 14px var(--c-yellow)}
+.ledbar .led:nth-child(10)::after{background:var(--c-red);box-shadow:0 0 16px var(--c-red)}
+.ledbar.lit .led:nth-child(1)::after{transition-delay:.05s}
+.ledbar.lit .led:nth-child(2)::after{transition-delay:.12s}
+.ledbar.lit .led:nth-child(3)::after{transition-delay:.19s}
+.ledbar.lit .led:nth-child(4)::after{transition-delay:.26s}
+.ledbar.lit .led:nth-child(5)::after{transition-delay:.33s}
+.ledbar.lit .led:nth-child(6)::after{transition-delay:.40s}
+.ledbar.lit .led:nth-child(7)::after{transition-delay:.47s}
+.ledbar.lit .led:nth-child(8)::after{transition-delay:.54s}
+.ledbar.lit .led:nth-child(9)::after{transition-delay:.61s}
+.ledbar.lit .led:nth-child(10)::after{transition-delay:.68s}
+.ledbar-cap{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.7rem;color:var(--faint);margin-top:8px}
+
+/* stats */
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-top:54px;
+  border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--line)}
+.hero-stats .stat{background:var(--surface);padding:22px 20px}
+.hero-stats .stat .n{font-family:var(--f-display);font-size:2rem;font-weight:700;line-height:1}
+.hero-stats .stat .n.grad{background:var(--thermal);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-stats .stat .l{font-family:var(--f-mono);font-size:.72rem;color:var(--muted);margin-top:8px;text-transform:uppercase;letter-spacing:.1em}
+
+/* ============================================================
+   SECCIONES
+   ============================================================ */
+section{padding:84px 0;position:relative}
+.section-head{max-width:720px;margin-bottom:46px}
+.section-head h2{font-size:clamp(1.9rem,4vw,2.9rem);margin:16px 0 14px}
+.section-head p{color:var(--muted);font-size:1.04rem}
+
+.phase-tag{
+  display:inline-block;font-family:var(--f-mono);font-size:.74rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:5px 12px;border-radius:6px;
+  background:rgba(255,138,61,.12);color:var(--accent);border:1px solid rgba(255,138,61,.28);
+}
+.phase-tag.f2{background:rgba(47,134,255,.12);color:var(--c-blue);border-color:rgba(47,134,255,.28)}
+
+/* divisor con etiqueta */
+.phase-divider{display:flex;align-items:center;gap:18px;margin:0 0 6px}
+.phase-divider .ln{flex:1;height:1px;background:var(--line)}
+
+/* ---------- tarjetas de etapa ---------- */
+.stage{
+  display:grid;grid-template-columns:1fr 1fr;gap:42px;align-items:center;
+  padding:38px 0;border-top:1px solid var(--line-soft);
+}
+.stage:nth-child(even) .stage-media{order:2}
+.stage-media{
+  background:#fff;border-radius:var(--r);padding:22px;border:1px solid var(--line);
+  position:relative;overflow:hidden;
+}
+.stage-media img{margin:0 auto}
+.stage-media .tag{
+  position:absolute;top:12px;left:12px;font-family:var(--f-mono);font-size:.68rem;
+  background:#0c111a;color:var(--accent);padding:4px 9px;border-radius:6px;letter-spacing:.08em;
+}
+.stage-body h3{font-size:1.6rem;margin:14px 0 12px}
+.stage-body p{color:var(--muted);margin-bottom:14px}
+.stage-step{font-family:var(--f-mono);font-size:.78rem;color:var(--accent);letter-spacing:.2em}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.chip{font-family:var(--f-mono);font-size:.73rem;color:var(--text);background:var(--surface-2);
+  border:1px solid var(--line);border-radius:6px;padding:5px 10px}
+.chip b{color:var(--accent);font-weight:600}
+
+/* ---------- fotos reales ---------- */
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.shot{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;
+  transition:transform .3s, border-color .3s, box-shadow .3s;
+}
+.shot:hover{transform:translateY(-5px);border-color:var(--accent);box-shadow:0 18px 40px -22px var(--accent)}
+.shot .ph{aspect-ratio:4/3;overflow:hidden;background:#0c111a}
+.shot .ph img{width:100%;height:100%;object-fit:cover}
+.shot .cap{padding:16px 18px}
+.shot .cap .k{font-family:var(--f-mono);font-size:.72rem;color:var(--accent);letter-spacing:.12em}
+.shot .cap h4{font-size:1.05rem;margin:6px 0 6px}
+.shot .cap p{font-size:.88rem;color:var(--muted);line-height:1.5}
+
+/* ---------- cálculos ---------- */
+.calc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.calc{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:24px;
+  position:relative;
+}
+.calc::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;
+  background:var(--thermal);border-radius:3px 0 0 3px}
+.calc h4{font-size:1.06rem;margin-bottom:10px}
+.calc .formula{
+  font-family:var(--f-mono);font-size:1.04rem;color:var(--text);background:var(--bg-2);
+  border:1px solid var(--line);border-radius:10px;padding:13px 16px;margin:12px 0;letter-spacing:.02em;
+}
+.calc p{color:var(--muted);font-size:.92rem}
+
+/* ---------- presupuesto ---------- */
+.table-wrap{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+thead th{
+  font-family:var(--f-mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--muted);text-align:left;padding:14px 18px;background:var(--bg-2);border-bottom:1px solid var(--line);
+}
+tbody td{padding:12px 18px;border-bottom:1px solid var(--line-soft)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--surface-2)}
+td.num,th.num{text-align:right;font-family:var(--f-mono)}
+.total-row td{font-family:var(--f-display);font-weight:700;font-size:1.05rem;background:var(--bg-2)}
+.total-row .grad{background:var(--thermal);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ---------- pros / contras ---------- */
+.pc-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.pc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:26px}
+.pc.pro{border-top:3px solid var(--c-green)}
+.pc.con{border-top:3px solid var(--c-red)}
+.pc h3{font-size:1.25rem;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.pc .ico{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font-family:var(--f-mono);font-weight:700}
+.pc.pro .ico{background:rgba(37,211,102,.15);color:var(--c-green)}
+.pc.con .ico{background:rgba(255,77,77,.15);color:var(--c-red)}
+.pc ul{list-style:none;display:flex;flex-direction:column;gap:14px}
+.pc li{display:flex;gap:12px;font-size:.94rem;color:var(--muted)}
+.pc li b{color:var(--text);font-weight:600}
+.pc li::before{content:"";flex:0 0 7px;height:7px;border-radius:50%;margin-top:8px}
+.pc.pro li::before{background:var(--c-green)}
+.pc.con li::before{background:var(--c-red)}
+
+/* ============================================================
+   FASE II · RIESGOS
+   ============================================================ */
+.risk-layout{display:grid;grid-template-columns:1fr 1.35fr;gap:36px;align-items:start}
+
+/* matriz */
+.matrix-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:26px}
+.matrix-card h3{font-size:1.2rem;margin-bottom:6px}
+.matrix-card .sub{font-family:var(--f-mono);font-size:.76rem;color:var(--muted);margin-bottom:20px}
+.matrix{display:grid;grid-template-columns:auto repeat(5,1fr);gap:6px}
+.matrix .axis-y{writing-mode:vertical-rl;transform:rotate(180deg);
+  font-family:var(--f-mono);font-size:.7rem;color:var(--muted);text-align:center;
+  letter-spacing:.18em;text-transform:uppercase;grid-row:1/6;display:grid;place-items:center}
+.cell{
+  aspect-ratio:1;border-radius:8px;display:grid;place-items:center;position:relative;
+  font-family:var(--f-mono);font-weight:700;font-size:.92rem;color:#0a0a0a;cursor:default;
+  transition:transform .18s;
+}
+.cell:hover{transform:scale(1.08);z-index:2}
+.cell .ids{position:absolute;font-size:.74rem}
+.matrix .xlabels{grid-column:2/7;display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:6px}
+.matrix .xlabels span{font-family:var(--f-mono);font-size:.66rem;color:var(--faint);text-align:center}
+.axis-x-title{grid-column:2/7;text-align:center;font-family:var(--f-mono);font-size:.7rem;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+
+.risk-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:22px;font-family:var(--f-mono);font-size:.74rem;color:var(--muted)}
+.risk-legend .lg{display:flex;align-items:center;gap:7px}
+.risk-legend .sw{width:13px;height:13px;border-radius:3px}
+
+/* tabla de riesgos */
+.risk-table .table-wrap{overflow-x:auto}
+.risk-table table{font-size:.86rem;min-width:560px}
+.risk-id{font-family:var(--f-mono);font-weight:700;width:30px;height:30px;border-radius:7px;
+  display:grid;place-items:center;color:#0a0a0a}
+.pill{font-family:var(--f-mono);font-size:.72rem;padding:4px 9px;border-radius:50px;display:inline-block;font-weight:600}
+.pill.score{color:#0a0a0a}
+.pill.act{background:var(--surface-2);border:1px solid var(--line);color:var(--text)}
+.arrow{color:var(--c-green);font-family:var(--f-mono);font-weight:700}
+
+/* ---------- conclusiones ---------- */
+.notes-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.note{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:28px}
+.note h3{font-size:1.3rem;margin-bottom:18px;display:flex;align-items:center;gap:12px}
+.note h3 .num{font-family:var(--f-mono);font-size:.9rem;color:var(--accent);
+  border:1px solid var(--line);border-radius:8px;padding:3px 9px}
+.note ol,.note ul{padding-left:20px;display:flex;flex-direction:column;gap:11px}
+.note li{color:var(--muted);font-size:.93rem}
+.note li::marker{color:var(--accent);font-family:var(--f-mono)}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);padding:60px 0 50px;margin-top:40px;background:var(--bg-2)}
+.foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px}
+footer h4{font-family:var(--f-mono);font-size:.76rem;text-transform:uppercase;letter-spacing:.16em;
+  color:var(--accent);margin-bottom:16px}
+footer p,footer li{color:var(--muted);font-size:.9rem;line-height:1.7}
+footer ul{list-style:none}
+.team-list li{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line-soft)}
+.team-list .carnet{font-family:var(--f-mono);color:var(--faint);font-size:.8rem}
+.refs a{color:var(--muted);transition:.2s;border-bottom:1px solid transparent}
+.refs a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.foot-bottom{margin-top:46px;padding-top:24px;border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  font-family:var(--f-mono);font-size:.78rem;color:var(--faint)}
+
+/* ---------- reveal ---------- */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media(max-width:900px){
+  .stage{grid-template-columns:1fr;gap:24px}
+  .stage:nth-child(even) .stage-media{order:0}
+  .gallery{grid-template-columns:1fr}
+  .calc-grid,.pc-grid,.notes-grid{grid-template-columns:1fr}
+  .risk-layout{grid-template-columns:1fr}
+  .hero-stats{grid-template-columns:1fr 1fr}
+  .foot-grid{grid-template-columns:1fr}
+  .nav-links{
+    position:fixed;top:64px;left:0;right:0;flex-direction:column;align-items:stretch;
+    background:rgba(8,11,17,.97);border-bottom:1px solid var(--line);padding:14px;gap:4px;
+    transform:translateY(-130%);transition:transform .3s;
+  }
+  .nav-links.open{transform:none}
+  .nav-toggle{display:block}
+}
+@media(max-width:480px){
+  .hero-stats{grid-template-columns:1fr}
+  .matrix .axis-y{font-size:.6rem}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .reveal{opacity:1;transform:none}
+}
+
+</style>
 </head>
 <body>
 
@@ -93,7 +461,7 @@
     <div class="stage reveal">
       <div class="stage-media">
         <span class="tag">ESQUEMÁTICO 01</span>
-        <img src="assets/img/diagrama-sensor.png" alt="Diagrama del sensor NTC con LM358">
+        <img src="diagrama-sensor.png" alt="Diagrama del sensor NTC con LM358">
       </div>
       <div class="stage-body">
         <span class="stage-step">ETAPA 01 / SENSADO</span>
@@ -112,7 +480,7 @@
     <div class="stage reveal">
       <div class="stage-media">
         <span class="tag">ESQUEMÁTICO 02</span>
-        <img src="assets/img/diagrama-visualizacion.png" alt="Diagrama de visualización con LM3914 y buzzer">
+        <img src="diagrama-visualizacion.png" alt="Diagrama de visualización con LM3914 y buzzer">
       </div>
       <div class="stage-body">
         <span class="stage-step">ETAPA 02 / VISUALIZACIÓN</span>
@@ -131,7 +499,7 @@
     <div class="stage reveal">
       <div class="stage-media">
         <span class="tag">ESQUEMÁTICO 03</span>
-        <img src="assets/img/diagrama-potencia.png" alt="Diagrama de control de potencia con MOC3021 y TRIAC BT136">
+        <img src="diagrama-potencia.png" alt="Diagrama de control de potencia con MOC3021 y TRIAC BT136">
       </div>
       <div class="stage-body">
         <span class="stage-step">ETAPA 03 / POTENCIA</span>
@@ -159,7 +527,7 @@
 
     <div class="gallery">
       <div class="shot reveal">
-        <div class="ph"><img src="assets/img/real-lm358.jpg" alt="Potenciómetro de ganancia del LM358 resaltado"></div>
+        <div class="ph"><img src="real-lm358.jpg" alt="Potenciómetro de ganancia del LM358 resaltado"></div>
         <div class="cap">
           <span class="k">RV2 · 10 kΩ</span>
           <h4>Ganancia del LM358</h4>
@@ -167,7 +535,7 @@
         </div>
       </div>
       <div class="shot reveal">
-        <div class="ph"><img src="assets/img/real-lm3914.jpg" alt="Potenciómetro de referencia del LM3914 resaltado"></div>
+        <div class="ph"><img src="real-lm3914.jpg" alt="Potenciómetro de referencia del LM3914 resaltado"></div>
         <div class="cap">
           <span class="k">RV4 · techo de escala</span>
           <h4>Referencia del LM3914</h4>
@@ -175,7 +543,7 @@
         </div>
       </div>
       <div class="shot reveal">
-        <div class="ph"><img src="assets/img/real-potencia.jpg" alt="Potenciómetro de 100k del circuito de potencia resaltado"></div>
+        <div class="ph"><img src="real-potencia.jpg" alt="Potenciómetro de 100k del circuito de potencia resaltado"></div>
         <div class="cap">
           <span class="k">RV5 · 100 kΩ</span>
           <h4>Sensibilidad de potencia</h4>
@@ -433,6 +801,173 @@
   </div>
 </footer>
 
-<script src="assets/js/main.js"></script>
+<script>
+/* ============================================================
+   Sistema de Control de Temperatura Analógico — interactividad
+   ============================================================ */
+(function () {
+  'use strict';
+
+  /* ---------- nav: estado al hacer scroll ---------- */
+  var nav = document.getElementById('nav');
+  var onScroll = function () {
+    if (window.scrollY > 24) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* ---------- menú móvil ---------- */
+  var toggle = document.getElementById('navToggle');
+  var links = document.getElementById('navLinks');
+  toggle.addEventListener('click', function () { links.classList.toggle('open'); });
+  links.addEventListener('click', function (e) {
+    if (e.target.tagName === 'A') links.classList.remove('open');
+  });
+
+  /* ---------- reveal con IntersectionObserver ---------- */
+  var revealEls = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en, idx) {
+        if (en.isIntersecting) {
+          en.target.style.transitionDelay = (Math.min(idx, 4) * 0.06) + 's';
+          en.target.classList.add('in');
+          io.unobserve(en.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+    revealEls.forEach(function (el) { io.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add('in'); });
+  }
+
+  /* ---------- barra de LEDs del hero ---------- */
+  var heroBar = document.getElementById('heroBar');
+  if (heroBar) {
+    var fired = false;
+    var fill = function () {
+      if (fired) return;
+      var r = heroBar.getBoundingClientRect();
+      if (r.top < window.innerHeight * 0.9) {
+        heroBar.classList.add('lit');
+        fired = true;
+        window.removeEventListener('scroll', fill);
+      }
+    };
+    window.addEventListener('scroll', fill, { passive: true });
+    setTimeout(fill, 500);
+  }
+
+  /* ============================================================
+     MATRIZ DE RIESGO INTERACTIVA
+     ============================================================ */
+  // P = probabilidad (1-5), I = impacto (1-5)
+  var RISKS = {
+    A: { name: 'Aislamiento eléctrico', inh: { p: 3, i: 5 }, res: { p: 1, i: 5 } },
+    B: { name: 'Rango del LM358',       inh: { p: 4, i: 2 }, res: { p: 2, i: 2 } },
+    C: { name: 'Buzzer prematuro',      inh: { p: 3, i: 3 }, res: { p: 1, i: 2 } },
+    D: { name: 'Histéresis del TRIAC',  inh: { p: 4, i: 4 }, res: { p: 2, i: 2 } },
+    E: { name: 'Sobrecalentamiento BT136', inh: { p: 3, i: 4 }, res: { p: 1, i: 4 } },
+    F: { name: 'Polaridad LEDs / Q3',   inh: { p: 4, i: 2 }, res: { p: 1, i: 2 } }
+  };
+
+  function colorFor(score) {
+    if (score <= 4) return '#25d366';
+    if (score <= 9) return '#ffd23f';
+    if (score <= 14) return '#ff8a3d';
+    return '#ff4d4d';
+  }
+
+  var matrix = document.getElementById('matrix');
+  var modeLabel = document.getElementById('matrixMode');
+  var mode = 'res';
+
+  function render() {
+    if (!matrix) return;
+    matrix.innerHTML = '';
+    matrix.style.gridTemplateColumns = '26px repeat(5, 1fr)';
+
+    // eje Y
+    var axisY = document.createElement('div');
+    axisY.className = 'axis-y';
+    axisY.style.gridColumn = '1';
+    axisY.style.gridRow = '1 / 6';
+    axisY.textContent = 'Impacto';
+    matrix.appendChild(axisY);
+
+    // dónde cae cada riesgo en el modo actual
+    var placement = {}; // "p-i" -> [ids]
+    Object.keys(RISKS).forEach(function (id) {
+      var pt = RISKS[id][mode === 'res' ? 'res' : 'inh'];
+      var key = pt.p + '-' + pt.i;
+      (placement[key] = placement[key] || []).push(id);
+    });
+
+    // filas: impacto 5 (arriba) → 1 (abajo); columnas: prob 1 → 5
+    for (var r = 0; r < 5; r++) {
+      var impacto = 5 - r;
+      for (var c = 0; c < 5; c++) {
+        var prob = c + 1;
+        var score = prob * impacto;
+        var cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.style.gridColumn = (c + 2).toString();
+        cell.style.gridRow = (r + 1).toString();
+        cell.style.background = colorFor(score);
+        cell.title = 'Probabilidad ' + prob + ' × Impacto ' + impacto + ' = ' + score;
+
+        var ids = placement[prob + '-' + impacto];
+        if (ids) {
+          var box = document.createElement('span');
+          box.className = 'ids';
+          box.textContent = ids.join(' ');
+          cell.appendChild(box);
+          cell.title = ids.map(function (x) { return x + ': ' + RISKS[x].name; }).join('  ·  ');
+        } else {
+          cell.style.opacity = '0.34';
+        }
+        matrix.appendChild(cell);
+      }
+    }
+
+    // etiquetas eje X (1-5)
+    for (var x = 0; x < 5; x++) {
+      var lab = document.createElement('span');
+      lab.style.cssText = 'font-family:var(--f-mono);font-size:.66rem;color:var(--faint);text-align:center';
+      lab.style.gridColumn = (x + 2).toString();
+      lab.style.gridRow = '6';
+      lab.textContent = (x + 1).toString();
+      matrix.appendChild(lab);
+    }
+    // título eje X
+    var xt = document.createElement('div');
+    xt.className = 'axis-x-title';
+    xt.style.gridColumn = '2 / 7';
+    xt.style.gridRow = '7';
+    xt.textContent = 'Probabilidad';
+    matrix.appendChild(xt);
+
+    modeLabel.textContent = mode === 'res'
+      ? 'Mostrando: riesgo RESIDUAL (con controles)'
+      : 'Mostrando: riesgo INHERENTE (sin controles)';
+  }
+
+  var btnInh = document.getElementById('btnInherente');
+  var btnRes = document.getElementById('btnResidual');
+  function setActive(active, other) {
+    active.style.borderColor = 'var(--accent)';
+    active.style.color = 'var(--accent)';
+    other.style.borderColor = 'var(--line)';
+    other.style.color = 'var(--text)';
+  }
+  if (btnInh && btnRes) {
+    btnInh.addEventListener('click', function () { mode = 'inh'; setActive(btnInh, btnRes); render(); });
+    btnRes.addEventListener('click', function () { mode = 'res'; setActive(btnRes, btnInh); render(); });
+  }
+  render();
+})();
+
+</script>
 </body>
 </html>
