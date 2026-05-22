@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Control de Temperatura Analógico · UMG</title>
+<meta name="description" content="Documentación del proyecto de Electrónica Analógica: sistema de control de temperatura 100% analógico con termistor NTC, LM358, LM3914, MOC3021 y TRIAC BT136. Fase I (diseño) y Fase II (análisis de riesgos).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<!-- ===================== NAV ===================== -->
+<nav class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a href="#top" class="brand"><span class="dot"></span> Control Térmico Analógico</a>
+    <button class="nav-toggle" id="navToggle">menú</button>
+    <div class="nav-links" id="navLinks">
+      <a href="#resumen">Resumen</a>
+      <a href="#fase1">Fase I · Diseño</a>
+      <a href="#fotos">Montaje</a>
+      <a href="#fase2">Fase II · Riesgos</a>
+      <a href="#cierre">Conclusiones</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<header class="hero" id="top">
+  <div class="wrap">
+    <span class="eyebrow reveal">Electrónica Analógica · Quinto Ciclo "B" · UMG</span>
+    <h1 class="reveal">Sistema de control de <span class="grad">temperatura</span> 100&nbsp;% analógico</h1>
+    <p class="lead reveal">Un circuito que mide, visualiza y regula la temperatura de forma proporcional y continua —sin microcontroladores ni software— usando un termistor NTC, amplificación con LM358, una barra de 10 LEDs con el LM3914 y control de potencia de 120&nbsp;V&nbsp;CA mediante optoacoplador MOC3021 y TRIAC BT136.</p>
+
+    <div class="ledbar reveal" id="heroBar">
+      <span class="led"></span><span class="led"></span><span class="led"></span><span class="led"></span>
+      <span class="led"></span><span class="led"></span><span class="led"></span><span class="led"></span>
+      <span class="led"></span><span class="led"></span>
+    </div>
+    <div class="ledbar-cap reveal"><span>~25 °C · 0 V</span><span>SOBRETEMPERATURA · 8 V · BUZZER</span></div>
+
+    <div class="hero-stats reveal">
+      <div class="stat"><div class="n grad">0–8 V</div><div class="l">Rango de señal</div></div>
+      <div class="stat"><div class="n">10</div><div class="l">Niveles de LED</div></div>
+      <div class="stat"><div class="n">120 V</div><div class="l">Carga CA controlada</div></div>
+      <div class="stat"><div class="n">Q 103.50</div><div class="l">Costo total</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== RESUMEN ===================== -->
+<section id="resumen">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">El problema</span>
+      <h2>¿Por qué un control de temperatura analógico?</h2>
+      <p>Muchos sistemas de calefacción solo encienden y apagan, lo que genera variaciones bruscas, consumo excesivo y desgaste prematuro. Las soluciones digitales encarecen y complican el diseño. Aquí se resuelve con electrónica analógica: barata, sin programación y de respuesta proporcional.</p>
+    </div>
+
+    <div class="calc-grid">
+      <div class="calc reveal">
+        <h4>Detección</h4>
+        <p>El termistor NTC forma un divisor con una resistencia. Al subir la temperatura, su resistencia baja y el voltaje en la entrada (+) del LM358 sube. La señal se amplifica de forma lineal hasta un rango útil de 0 V a 8 V.</p>
+      </div>
+      <div class="calc reveal">
+        <h4>Visualización</h4>
+        <p>El voltaje amplificado entra al LM3914, que actúa como voltímetro de 10 niveles encendiendo los LEDs en modo barra. Al llegar al último nivel, el buzzer suena como alarma de sobretemperatura.</p>
+      </div>
+      <div class="calc reveal">
+        <h4>Potencia</h4>
+        <p>Un seguidor de emisor toma la señal y, al superar el umbral, dispara el MOC3021. Éste activa la compuerta del TRIAC BT136, dejando pasar la corriente alterna hacia la lámpara que simula el calefactor.</p>
+      </div>
+      <div class="calc reveal">
+        <h4>Aislamiento</h4>
+        <p>El optoacoplador MOC3021 es la única interfaz entre la etapa de control (12 V) y la de potencia (120 V CA). No existe continuidad eléctrica directa entre ambas: seguridad ante todo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FASE I ===================== -->
+<section id="fase1">
+  <div class="wrap">
+    <div class="phase-divider reveal"><span class="phase-tag">Fase I</span><span class="ln"></span></div>
+    <div class="section-head reveal">
+      <h2>Diseño y construcción del circuito</h2>
+      <p>El sistema se divide en tres etapas que operan simultáneamente. Cada una tiene su propio diagrama esquemático y su potenciómetro de calibración independiente.</p>
+    </div>
+
+    <!-- Etapa 1 -->
+    <div class="stage reveal">
+      <div class="stage-media">
+        <span class="tag">ESQUEMÁTICO 01</span>
+        <img src="assets/img/diagrama-sensor.png" alt="Diagrama del sensor NTC con LM358">
+      </div>
+      <div class="stage-body">
+        <span class="stage-step">ETAPA 01 / SENSADO</span>
+        <h3>Detección y acondicionamiento</h3>
+        <p>El termistor RT2 (NTC 10 kΩ a 25 °C) en serie con R15 (1 kΩ) forma el divisor alimentado a 12 V. El LM358 amplifica la señal en configuración no inversora para cubrir un rango de 0 V a 8 V. Los capacitores C1 y C2 filtran el ruido.</p>
+        <div class="chips">
+          <span class="chip"><b>Av</b> = 1 + R17 / RV2</span>
+          <span class="chip">RT2 · NTC 10 kΩ</span>
+          <span class="chip">U3 · LM358</span>
+          <span class="chip">RV2 · 10 kΩ</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Etapa 2 -->
+    <div class="stage reveal">
+      <div class="stage-media">
+        <span class="tag">ESQUEMÁTICO 02</span>
+        <img src="assets/img/diagrama-visualizacion.png" alt="Diagrama de visualización con LM3914 y buzzer">
+      </div>
+      <div class="stage-body">
+        <span class="stage-step">ETAPA 02 / VISUALIZACIÓN</span>
+        <h3>Barra de LEDs y alarma</h3>
+        <p>La señal entra al pin SIG del LM3914, que enciende los 10 LEDs (verdes → amarillos → rojos) en modo barra conforme sube el voltaje. El buzzer BUZ1 se conecta al pin 10 y suena únicamente al alcanzar el último nivel de la escala.</p>
+        <div class="chips">
+          <span class="chip">U4 · LM3914</span>
+          <span class="chip">10 niveles</span>
+          <span class="chip">RV4 · techo de escala</span>
+          <span class="chip"><b>BUZ1</b> en pin 10</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Etapa 3 -->
+    <div class="stage reveal">
+      <div class="stage-media">
+        <span class="tag">ESQUEMÁTICO 03</span>
+        <img src="assets/img/diagrama-potencia.png" alt="Diagrama de control de potencia con MOC3021 y TRIAC BT136">
+      </div>
+      <div class="stage-body">
+        <span class="stage-step">ETAPA 03 / POTENCIA</span>
+        <h3>Control de la carga de 120 V CA</h3>
+        <p>Q3 (seguidor de emisor) toma la señal y RV5 ajusta el umbral. Cuando Q2 conduce, enciende el LED interno del MOC3021, que dispara el TRIAC BT136 y deja pasar la corriente alterna hacia la lámpara L1, sin chispas ni encendidos accidentales.</p>
+        <div class="chips">
+          <span class="chip">U5 · MOC3021</span>
+          <span class="chip">U6 · TRIAC BT136</span>
+          <span class="chip">Q2 / Q3 · BC547</span>
+          <span class="chip">RV5 · 100 kΩ</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOTOS REALES ===================== -->
+<section id="fotos">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Montaje físico</span>
+      <h2>El circuito en protoboard</h2>
+      <p>Las tres tomas reales del montaje señalan cada potenciómetro de calibración. Estos tres ajustes independientes son el corazón de la flexibilidad del diseño analógico.</p>
+    </div>
+
+    <div class="gallery">
+      <div class="shot reveal">
+        <div class="ph"><img src="assets/img/real-lm358.jpg" alt="Potenciómetro de ganancia del LM358 resaltado"></div>
+        <div class="cap">
+          <span class="k">RV2 · 10 kΩ</span>
+          <h4>Ganancia del LM358</h4>
+          <p>Regula la salida del LM358, es decir, qué tanto se amplifica la señal del sensor antes de llegar al LM3914.</p>
+        </div>
+      </div>
+      <div class="shot reveal">
+        <div class="ph"><img src="assets/img/real-lm3914.jpg" alt="Potenciómetro de referencia del LM3914 resaltado"></div>
+        <div class="cap">
+          <span class="k">RV4 · techo de escala</span>
+          <h4>Referencia del LM3914</h4>
+          <p>Ajusta el voltaje máximo al que se activa el último LED y la bocina (buzzer): define dónde "termina" la barra.</p>
+        </div>
+      </div>
+      <div class="shot reveal">
+        <div class="ph"><img src="assets/img/real-potencia.jpg" alt="Potenciómetro de 100k del circuito de potencia resaltado"></div>
+        <div class="cap">
+          <span class="k">RV5 · 100 kΩ</span>
+          <h4>Sensibilidad de potencia</h4>
+          <p>Ajusta la sensibilidad: en qué momento se activa el foquito que simula nuestro circuito de potencia (la lámpara).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CÁLCULOS ===================== -->
+<section>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Memoria de cálculo</span>
+      <h2>Fórmulas y especificaciones</h2>
+    </div>
+    <div class="calc-grid">
+      <div class="calc reveal">
+        <h4>Voltaje del divisor de entrada</h4>
+        <div class="formula">Vin = Vcc · ( R15 / (Rntc + R15) )</div>
+        <p>R15 = 1 kΩ mantiene el voltaje bajo y evita la saturación prematura mientras el NTC baja de resistencia con el calor.</p>
+      </div>
+      <div class="calc reveal">
+        <h4>Ganancia del amplificador no inversor</h4>
+        <div class="formula">Av = 1 + ( R17 / RV2 )</div>
+        <p>Con R17 (10 kΩ) y el potenciómetro RV2 (10 kΩ) se expande la señal hacia el LM3914 hasta el rango 0–8 V.</p>
+      </div>
+      <div class="calc reveal">
+        <h4>Techo de escala del LM3914</h4>
+        <div class="formula">RV4 → Vref del último nivel</div>
+        <p>RV4 funciona como divisor de tensión para emparejar la escala visual con la salida del LM358.</p>
+      </div>
+      <div class="calc reveal">
+        <h4>Umbral de potencia</h4>
+        <div class="formula">VBE(Q2) &gt; 0.7 V → dispara MOC3021</div>
+        <p>La señal pasa por Q3 y el atenuador RV5; al superar 0.7 V se activa Q2, encendiendo el optoacoplador y el TRIAC.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PRESUPUESTO ===================== -->
+<section>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Materiales</span>
+      <h2>Presupuesto del proyecto</h2>
+      <p>Precios en Quetzales (Q). El uso de circuitos integrados y transistores estándar mantiene el costo muy por debajo de una solución con microcontrolador.</p>
+    </div>
+    <div class="table-wrap reveal">
+      <table>
+        <thead>
+          <tr><th class="num">Cant.</th><th>Descripción</th><th class="num">P. unitario</th><th class="num">Total</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="num">2</td><td>Transistor BC547</td><td class="num">Q 1.50</td><td class="num">Q 3.00</td></tr>
+          <tr><td class="num">1</td><td>Termistor NTC 10K Ω</td><td class="num">Q 4.50</td><td class="num">Q 4.50</td></tr>
+          <tr><td class="num">1</td><td>Resistencia 10K Ω</td><td class="num">Q 1.00</td><td class="num">Q 1.00</td></tr>
+          <tr><td class="num">1</td><td>Resistencia 100K Ω</td><td class="num">Q 1.00</td><td class="num">Q 1.00</td></tr>
+          <tr><td class="num">2</td><td>Resistencia 1K Ω</td><td class="num">Q 1.00</td><td class="num">Q 2.00</td></tr>
+          <tr><td class="num">3</td><td>Resistencia 4.7K Ω</td><td class="num">Q 1.00</td><td class="num">Q 3.00</td></tr>
+          <tr><td class="num">2</td><td>Capacitor 0.1 µF</td><td class="num">Q 1.00</td><td class="num">Q 2.00</td></tr>
+          <tr><td class="num">1</td><td>Capacitor 10 µF</td><td class="num">Q 2.00</td><td class="num">Q 2.00</td></tr>
+          <tr><td class="num">1</td><td>Amplificador operacional LM358</td><td class="num">Q 5.00</td><td class="num">Q 5.00</td></tr>
+          <tr><td class="num">2</td><td>Potenciómetro 10K Ω</td><td class="num">Q 5.00</td><td class="num">Q 10.00</td></tr>
+          <tr><td class="num">1</td><td>Potenciómetro 1K Ω</td><td class="num">Q 5.00</td><td class="num">Q 5.00</td></tr>
+          <tr><td class="num">10</td><td>LED</td><td class="num">Q 1.00</td><td class="num">Q 10.00</td></tr>
+          <tr><td class="num">1</td><td>Buzzer electrónico</td><td class="num">Q 15.00</td><td class="num">Q 15.00</td></tr>
+          <tr><td class="num">10</td><td>Resistencia 220 Ω</td><td class="num">Q 1.00</td><td class="num">Q 10.00</td></tr>
+          <tr><td class="num">3</td><td>Resistencia 330 Ω</td><td class="num">Q 1.00</td><td class="num">Q 3.00</td></tr>
+          <tr><td class="num">1</td><td>Driver de LED LM3914</td><td class="num">Q 14.00</td><td class="num">Q 14.00</td></tr>
+          <tr><td class="num">1</td><td>Triac BT136-600</td><td class="num">Q 8.00</td><td class="num">Q 8.00</td></tr>
+          <tr><td class="num">1</td><td>Optoacoplador MOC3021</td><td class="num">Q 5.00</td><td class="num">Q 5.00</td></tr>
+          <tr class="total-row"><td></td><td>TOTAL</td><td></td><td class="num grad">Q 103.50</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== VENTAJAS / DESVENTAJAS ===================== -->
+<section>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Balance del diseño</span>
+      <h2>Ventajas y desventajas</h2>
+    </div>
+    <div class="pc-grid">
+      <div class="pc pro reveal">
+        <h3><span class="ico">+</span> Ventajas</h3>
+        <ul>
+          <li><span><b>Inmunidad a fallos de software.</b> Al ser 100 % analógico no sufre bloqueos, desbordamientos de memoria ni fallas de firmware.</span></li>
+          <li><span><b>Flexibilidad de calibración.</b> Tres potenciómetros independientes (RV2, RV4, RV5) ajustan ganancia, techo visual y encendido de potencia por separado.</span></li>
+          <li><span><b>Bajo costo.</b> Usa integrados y transistores estándar (BC547, BT136), mucho más económico que un microcontrolador.</span></li>
+          <li><span><b>Operación silenciosa y duradera.</b> El TRIAC conmuta los 120 V sin chispas, ruido ni desgaste mecánico de un relé.</span></li>
+        </ul>
+      </div>
+      <div class="pc con reveal">
+        <h3><span class="ico">−</span> Desventajas</h3>
+        <ul>
+          <li><span><b>Calibración manual compleja.</b> Sin pantalla digital, ajustar los umbrales exige multímetro y un trabajo muy milimétrico.</span></li>
+          <li><span><b>Sensibilidad al ruido eléctrico.</b> Vulnerable a interferencias; obligó a sumar tres capacitores de filtro para evitar lecturas falsas.</span></li>
+          <li><span><b>Disipación térmica en potencia.</b> El BT136 disipa calor de forma continua y requiere un disipador físico que aumenta tamaño y peso.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FASE II · RIESGOS ===================== -->
+<section id="fase2">
+  <div class="wrap">
+    <div class="phase-divider reveal"><span class="phase-tag f2">Fase II</span><span class="ln"></span></div>
+    <div class="section-head reveal">
+      <h2>Análisis de riesgos</h2>
+      <p>Se identificaron seis amenazas técnicas. Cada una se evaluó por su <b>riesgo inherente</b> (probabilidad × impacto, sin control) y su <b>riesgo residual</b> tras aplicar los controles. Usa el botón para ver cómo los controles mueven cada riesgo dentro de la matriz.</p>
+    </div>
+
+    <div class="risk-layout">
+      <!-- Matriz interactiva -->
+      <div class="matrix-card reveal">
+        <h3>Matriz de calor 5×5</h3>
+        <div class="sub" id="matrixMode">Mostrando: riesgo RESIDUAL (con controles)</div>
+        <div class="matrix" id="matrix"><!-- render JS --></div>
+        <div style="margin-top:18px;display:flex;gap:8px">
+          <button class="chip" id="btnInherente" style="cursor:pointer">Riesgo inherente</button>
+          <button class="chip" id="btnResidual" style="cursor:pointer;border-color:var(--accent);color:var(--accent)">Riesgo residual</button>
+        </div>
+        <div class="risk-legend">
+          <span class="lg"><span class="sw" style="background:#25d366"></span> Bajo (1–4)</span>
+          <span class="lg"><span class="sw" style="background:#ffd23f"></span> Moderado (5–9)</span>
+          <span class="lg"><span class="sw" style="background:#ff8a3d"></span> Alto (10–14)</span>
+          <span class="lg"><span class="sw" style="background:#ff4d4d"></span> Crítico (15–25)</span>
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="risk-table reveal">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Amenaza</th><th class="num">Inh.</th><th class="num">Res.</th><th>Acción</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="risk-id" style="background:#ff4d4d">A</span></td>
+                <td><b>Fallo de aislamiento eléctrico</b> — cruzar los 12 V con los 120 V CA. <em>Control:</em> separación física estricta de pistas; el MOC3021 como única interfaz de cruce.</td>
+                <td class="num"><span class="pill score" style="background:#ff4d4d">15</span></td>
+                <td class="num"><span class="pill score" style="background:#ffd23f">5</span></td>
+                <td><span class="pill act">Controlar</span></td>
+              </tr>
+              <tr>
+                <td><span class="risk-id" style="background:#ffd23f">B</span></td>
+                <td><b>Desbordamiento del rango del LM358</b> — no alcanzar 8 V o saturarse antes. <em>Control:</em> capacitores de desacoplo y filtro, calibración fina de RV2 y medición en el pin 1.</td>
+                <td class="num"><span class="pill score" style="background:#ffd23f">8</span></td>
+                <td class="num"><span class="pill score" style="background:#25d366">4</span></td>
+                <td><span class="pill act">Controlar</span></td>
+              </tr>
+              <tr>
+                <td><span class="risk-id" style="background:#ffd23f">C</span></td>
+                <td><b>Activación prematura del buzzer</b> — suena antes del nivel 10. <em>Control:</em> negativo del buzzer estricto al pin 10 y SW2 en modo barra.</td>
+                <td class="num"><span class="pill score" style="background:#ffd23f">9</span></td>
+                <td class="num"><span class="pill score" style="background:#25d366">2</span></td>
+                <td><span class="pill act">Eliminar</span></td>
+              </tr>
+              <tr>
+                <td><span class="risk-id" style="background:#ff4d4d">D</span></td>
+                <td><b>Falta de linealidad / histéresis en la lámpara</b> — chispas o parpadeo en el TRIAC. <em>Control:</em> resistencia de 1 kΩ en la base de Q2 y red de disparo adecuada.</td>
+                <td class="num"><span class="pill score" style="background:#ff4d4d">16</span></td>
+                <td class="num"><span class="pill score" style="background:#25d366">4</span></td>
+                <td><span class="pill act">Controlar</span></td>
+              </tr>
+              <tr>
+                <td><span class="risk-id" style="background:#ff8a3d">E</span></td>
+                <td><b>Sobrecalentamiento del TRIAC BT136</b> — manejo continuo de 120 V CA. <em>Control:</em> incorporación obligatoria de un disipador térmico de aluminio.</td>
+                <td class="num"><span class="pill score" style="background:#ff8a3d">12</span></td>
+                <td class="num"><span class="pill score" style="background:#25d366">4</span></td>
+                <td><span class="pill act">Controlar</span></td>
+              </tr>
+              <tr>
+                <td><span class="risk-id" style="background:#ffd23f">F</span></td>
+                <td><b>Inversión de polaridad en LEDs o Q3</b> — error de montaje. <em>Control:</em> prueba de diodos con multímetro y mapeo E-B-C del BC547 antes de energizar.</td>
+                <td class="num"><span class="pill score" style="background:#ffd23f">8</span></td>
+                <td class="num"><span class="pill score" style="background:#25d366">2</span></td>
+                <td><span class="pill act">Eliminar</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CONCLUSIONES ===================== -->
+<section id="cierre">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Cierre</span>
+      <h2>Conclusiones y recomendaciones</h2>
+    </div>
+    <div class="notes-grid">
+      <div class="note reveal">
+        <h3><span class="num">01</span> Conclusiones</h3>
+        <ol>
+          <li>Se comprendió la importancia del control de temperatura para proteger equipos y mejorar la eficiencia energética en procesos electrónicos e industriales.</li>
+          <li>Se investigó la función del LM358, LM3914, MOC3021 y el TRIAC BT136 dentro del monitoreo, visualización, alarma y control proporcional de potencia.</li>
+          <li>Se demostró cómo el termistor NTC convierte cambios térmicos en señales eléctricas procesadas por los amplificadores y mostradas en la barra de LEDs.</li>
+        </ol>
+      </div>
+      <div class="note reveal">
+        <h3><span class="num">02</span> Recomendaciones</h3>
+        <ul>
+          <li>Usar componentes de calidad y bien calibrados, y ubicar el NTC lejos de fuentes de calor no deseadas.</li>
+          <li>Verificar el aislamiento entre control y potencia mediante el MOC3021, y ajustar bien el umbral de referencia.</li>
+          <li>Probar primero con cargas de baja tensión y añadir fusibles, ventilación y una fuente regulada estable.</li>
+          <li>Como mejora futura, integrar una pantalla digital para visualizar la temperatura exacta.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <div class="wrap foot-grid">
+    <div>
+      <h4>El proyecto</h4>
+      <p>Universidad Mariano Gálvez · Electrónica Analógica · Quinto Ciclo sección "B".<br>Catedrático: Ing. Jorge Salguero.<br>Entrega: 08 / 05 / 2026.</p>
+    </div>
+    <div>
+      <h4>Integrantes</h4>
+      <ul class="team-list">
+        <li><span>Luis Enrique Tocay Pocón</span><span class="carnet">3590-24-7692</span></li>
+        <li><span>Angela Gabriela Cujcuj Choy</span><span class="carnet">3590-24-7708</span></li>
+        <li><span>Kevin Manuel Veliz Galvez</span><span class="carnet">3590-25-1866</span></li>
+        <li><span>María del Carmen Cahuec Ixtecoc</span><span class="carnet">3590-16-4011</span></li>
+        <li><span>Jose Daniel Chacón Najarro</span><span class="carnet">3590-24-6059</span></li>
+      </ul>
+    </div>
+    <div class="refs">
+      <h4>Referencias</h4>
+      <ul>
+        <li><a href="https://www.ti.com/lit/ds/symlink/lm358.pdf" target="_blank" rel="noopener">LM358 · Texas Instruments</a></li>
+        <li><a href="https://www.ti.com/lit/ds/symlink/lm3914.pdf" target="_blank" rel="noopener">LM3914 · Texas Instruments</a></li>
+        <li><a href="https://www.st.com/resource/en/datasheet/bt136-600.pdf" target="_blank" rel="noopener">BT136 · STMicroelectronics</a></li>
+        <li><a href="https://learn.sparkfun.com/tutorials/dotbar-display-driver-hookup-guide/all" target="_blank" rel="noopener">Guía LM3914 · SparkFun</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap foot-bottom">
+    <span>© 2026 · Sistema de control de temperatura analógico</span>
+    <span>Hecho con electrónica analógica · sin microcontroladores</span>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>
